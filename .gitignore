@@ -1,0 +1,4 @@
+.env
+vendor/
+Scripts/mailing-sample.php
+Scripts/phpmailer-sample.php

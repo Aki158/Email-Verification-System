@@ -1,0 +1,27 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Commands\\": "Commands/",
+            "Database\\": "Database/",
+            "Exceptions\\": "Exceptions/",
+            "Helpers\\": "Helpers/",
+            "Middleware\\": "Middleware/",
+            "Models\\": "Models/",
+            "public\\": "public/",
+            "Response\\": "Response/",
+            "Routing\\": "Routing/",
+            "Scripts\\": "Scripts/",
+            "Types\\": "Types/",
+            "Views\\": "Views/"
+        }
+    },
+    "require": {
+        "joshcam/mysqli-database-class": "dev-master",
+        "fakerphp/faker": "^1.23",
+        "nesbot/carbon": "^2.71",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "require-dev": {
+        "pelmered/fake-car": "^1.7"
+    }
+}
