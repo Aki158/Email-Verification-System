@@ -3,6 +3,7 @@
 use Exceptions\AuthenticationFailureException;
 use Helpers\ValidationHelper;
 use Helpers\Authenticate;
+use Helpers\Mail;
 use Models\ComputerPart;
 use Response\FlashData;
 use Response\HTTPRenderer;
@@ -99,6 +100,22 @@ return [
             Authenticate::loginAsUser($user);
 
             FlashData::setFlashData('success', 'Account successfully created.');
+
+            // urlに必要な情報を定義する
+            $expiration = time() + 1800; // 現在時刻の時間 + 30分
+
+            $queryParameters = [
+                "id" => $user->getId(),
+                "user" => $user->getUsername(),
+                "expiration" => $expiration
+            ];
+            
+            $uri = "verify/email";
+            $url = Route::create($uri, function(){})->getSignedURL($queryParameters);
+
+            // 署名付き検証 URL を生成し、ユーザーのメールアドレスに送信します。
+            Mail::sendVerificationEmail($url, $user->getEmail());
+
             return new RedirectRenderer('random/part');
         } catch (\InvalidArgumentException $e) {
             error_log($e->getMessage());
