@@ -1,4 +1,4 @@
 .env
+private/
 vendor/
-Scripts/mailing-sample.php
-Scripts/phpmailer-sample.php
+Scripts/
