@@ -36,8 +36,7 @@ class HttpLoggingMiddleware implements Middleware {
             file_put_contents($this->logFilePath, $requestDetails, FILE_APPEND);
         }
         else if($this->logFileType === "db"){
-            // やりたいことは、.envのDATABASE_DRIVERの値によってmysqlまたはmemcacheのどちらかにログを保存する
-            // ちょっと実装に時間かかりそうだから、後回しにしようかな。。。
+            // .envのDATABASE_DRIVERの値によってmysqlまたはmemcacheのどちらかにログを保存する
         }
 
         // 次のミドルウェアまたはリクエストハンドラーを実行
@@ -69,8 +68,7 @@ class HttpLoggingMiddleware implements Middleware {
             file_put_contents($this->logFilePath, $responseDetails, FILE_APPEND);
         }
         else if($this->logFileType === "db"){
-            // やりたいことは、.envのDATABASE_DRIVERの値によってmysqlまたはmemcacheのどちらかにログを保存する
-            // ちょっと実装に時間かかりそうだから、後回しにしようかな。。。            
+            // .envのDATABASE_DRIVERの値によってmysqlまたはmemcacheのどちらかにログを保存する
         }
         
         return $response;

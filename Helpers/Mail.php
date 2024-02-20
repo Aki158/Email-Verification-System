@@ -3,7 +3,7 @@
 namespace Helpers;
 
 // composerの依存関係のオートロード
-require_once '../vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
 use Helpers\Settings;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -37,12 +37,12 @@ class Mail
             // HTMLコンテンツ
             $mail->isHTML(); // メール形式をHTMLに設定します。
             ob_start();
-            include('../Views/mail/templete.php');
+            include('Views/mail/templete.php');
             $mail->Body = ob_get_clean();
 
             // 本文は、相手のメールプロバイダーがHTMLをサポートしていない場合に備えて、シンプルなテキストで構成されています。
             ob_start();
-            include('../Views/mail/templete.txt'); // プレーンテキスト用のPHPファイル
+            include('Views/mail/templete.txt'); // プレーンテキスト用のPHPファイル
             $mail->AltBody = ob_get_clean();
 
             $mail->send();

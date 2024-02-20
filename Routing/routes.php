@@ -110,11 +110,12 @@ return [
                 "expiration" => $expiration
             ];
             
-            $uri = "verify/email";
-            $url = Route::create($uri, function(){})->getSignedURL($queryParameters);
+            $url = Route::create("verify/email", function(){})->getSignedURL($queryParameters);
 
             // 署名付き検証 URL を生成し、ユーザーのメールアドレスに送信します。
             Mail::sendVerificationEmail($url, $user->getEmail());
+
+            FlashData::setFlashData('success', 'We have sent a verification email to your email address!');
 
             return new RedirectRenderer('random/part');
         } catch (\InvalidArgumentException $e) {
@@ -257,39 +258,126 @@ return [
         return new JSONRenderer(['url'=>Route::create('test/share/files/jpg', function(){})->getSignedURL($validatedData)]);
     }),
     'verify/email'=> Route::create('verify/email', function(): HTTPRenderer{
+        try {
+            $id = Authenticate::getAuthenticatedUser()->getId();
+            $user = Authenticate::getAuthenticatedUser()->getUsername();
+            $idCheck = !isset($_GET['id']) || $id !== (int)$_GET['id'];
+            $userCheck = !isset($_GET['user']) || $user !== $_GET['user'];
 
-        $id = Authenticate::getAuthenticatedUser()->getId();
-        $user = Authenticate::getAuthenticatedUser()->getUsername();
-        $idCheck = !isset($_GET['id']) || $id !== $_GET['id'];
-        $userCheck = !isset($_GET['user']) || $user !== $_GET['user'];
-        
-        // ユーザーの詳細が URL パラメータと一致していることを確認します。        
-        if($idCheck || $userCheck){
-            FlashData::setFlashData('error', "The URL has expired.");
-            return new RedirectRenderer('random/part');
+            // ユーザーの詳細がURLパラメータと一致していることを確認します。
+            if($idCheck || $userCheck){
+                FlashData::setFlashData('error', "The URL is invalid.");
+                return new RedirectRenderer('random/part');
+            }
+
+            $required_fields = [
+                'id' => ValueType::INT,
+                'user' => ValueType::STRING,
+            ];
+
+            $validatedData = ValidationHelper::validateFields($required_fields, $_GET);
+
+            $userDao = DAOFactory::getUserDAO();
+            $user = $userDao->getById($id);
+
+            // データベースの email_verified 列を更新します。
+            $success = $userDao->update($user, $userDao->getHashedPasswordById($id), date("Y-m-d H:i:s"));
+
+            if (!$success) throw new Exception('Failed to update!');
+
+            FlashData::setFlashData('success', 'Your registration has been completed!');
+
+            return new RedirectRenderer('update/part');
+        } catch (\InvalidArgumentException $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'Invalid Data.');
+            return new RedirectRenderer('verify/resend');
+
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'An error occurred.');
+            return new RedirectRenderer('verify/resend');
         }
+    }),
+    'verify/resend'=> Route::create('verify/resend', function(): HTTPRenderer{
+        return new HTMLRenderer('page/send-verification-email');
+    }),
+    'form/verify/resend' => Route::create('form/verify/resend', function (): HTTPRenderer {
+        try {
+            // リクエストメソッドがPOSTかどうかをチェックします
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid request method!');
 
-        $required_fields = [
-            'id' => ValueType::INT,
-            'user' => ValueType::STRING,
-        ];
+            $isNewEmail = false;
 
-        $validatedData = ValidationHelper::validateFields($required_fields, $_GET);
+            $required_fields = [
+                'email' => ValueType::EMAIL,
+                'password' => ValueType::PASSWORD,
+            ];
 
-        // データベースの email_verified 列を更新します。
-        $userDao = DAOFactory::getUserDAO();
-        // 新しいUserオブジェクトを作成します
-        $user = new User(
-            username: $validatedData['username'],
-            email: $validatedData['email'],
-            company: $validatedData['company']
-        );
+            // new_emailに入力があれば、値を検証する
+            if(isset($_POST["new_email"]) && $_POST["new_email"] !== ""){
+                $required_fields["new_email"] = ValueType::EMAIL;
+                $isNewEmail = true;
+            }
 
-        // データベースにユーザーを作成しようとします
-        $success = $userDao->emailVerified($id);
+            // シンプルな検証
+            $validatedData = ValidationHelper::validateFields($required_fields, $_POST);
 
-        if (!$success) throw new Exception('Failed to update email_confirmed_at!');        
+            $userDao = DAOFactory::getUserDAO();
+            $user = $userDao->getByEmail($validatedData['email']);
 
-        return new JSONRenderer(['url'=>Route::create('', function(){})->getSignedURL($validatedData)]);
+
+            // 入力されたEメールが存在しない場合は、無効なE-メールと判断します
+            if($user === null){
+                FlashData::setFlashData('error', 'Email is not registered!');
+                return new RedirectRenderer('register');
+            }
+
+            // 入力されたパスワードが登録時のパスワードと一致しない場合は、無効なパスワードと判断します
+            if(!password_verify($validatedData["password"], $userDao->getHashedPasswordById($user->getId()))){
+                FlashData::setFlashData('error', 'Invalid Password! Password : '.$validatedData["password"]);
+                return new RedirectRenderer('register');
+            }
+
+            // 新しいEメールが入力されていれば、データベースのメールアドレスを変更します。
+            if($isNewEmail){
+                $user->setEmail($validatedData["new_email"]);
+
+                $success = $userDao->update($user, password_hash($validatedData['password'], PASSWORD_DEFAULT), null);
+    
+                if (!$success) throw new Exception('Failed to update!');
+            }
+
+            // urlに必要な情報を定義する
+            $expiration = time() + 1800; // 現在時刻の時間 + 30分
+
+            $queryParameters = [
+                "id" => $user->getId(),
+                "user" => $user->getUsername(),
+                "expiration" => $expiration
+            ];
+            
+            $url = Route::create("verify/email", function(){})->getSignedURL($queryParameters);
+
+            // 署名付き検証 URL を生成し、ユーザーのメールアドレスに送信します。
+            Mail::sendVerificationEmail($url, $user->getEmail());
+
+            FlashData::setFlashData('success', 'We have sent a verification email to your email address!');
+
+            return new RedirectRenderer('random/part');
+        } catch (\InvalidArgumentException $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'Invalid Data.');
+            return new RedirectRenderer('verify/resend');
+
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+
+            FlashData::setFlashData('error', 'An error occurred.');
+            return new RedirectRenderer('verify/resend');
+        }
     }),
 ];

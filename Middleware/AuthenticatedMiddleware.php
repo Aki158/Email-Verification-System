@@ -16,6 +16,9 @@ class AuthenticatedMiddleware implements Middleware
             FlashData::setFlashData('error', 'Must login to view this page.');
             return new RedirectRenderer('login');
         }
+        else if(!Authenticate::isVerificationEmail()){
+            return new RedirectRenderer('verify/resend');
+        }
 
         return $next();
     }
