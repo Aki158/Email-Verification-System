@@ -35,7 +35,7 @@ class UserDAOImpl implements UserDAO
         return true;
     }
 
-    public function update(User $user, string $password, ?string $email_confirmed_at): bool
+    public function update(User $user, string $password, ?string $emailConfirmedAt): bool
     {
         if ($user->getId() === null) throw new \Exception('The specified user has no ID.');
        
@@ -61,7 +61,7 @@ class UserDAOImpl implements UserDAO
                 $user->getUsername(),
                 $user->getEmail(),
                 $password,
-                $email_confirmed_at,
+                $emailConfirmedAt,
                 $user->getCompany(),
                 $user->getId()
             ]
@@ -69,7 +69,8 @@ class UserDAOImpl implements UserDAO
        
         if (!$result) return false;
 
-        $user->setEmailConfirmedAt($email_confirmed_at);
+        $user->setEmailConfirmedAt($emailConfirmedAt);
+        error_log("get_Email_At : ".$user->getEmailConfirmedAt());
 
         return true;
     }
@@ -103,6 +104,7 @@ class UserDAOImpl implements UserDAO
             email: $rawData['email'],
             id: $rawData['id'],
             company: $rawData['company'] ?? null,
+            emailConfirmedAt: $rawData['email_confirmed_at'] ?? null,
             timeStamp: new DataTimeStamp($rawData['created_at'], $rawData['updated_at'])
         );
     }

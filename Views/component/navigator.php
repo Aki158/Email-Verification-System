@@ -21,6 +21,9 @@
                         <a class="nav-link" href="#">Welcome, <?php echo htmlspecialchars($user->getUsername()); ?></a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="/verify/resend">Resend</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/logout">Logout</a>
                     </li>
                 <?php else: ?>

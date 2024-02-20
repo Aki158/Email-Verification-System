@@ -66,7 +66,7 @@ class Authenticate
     }
 
     public static function isVerificationEmail(): bool{
-        error_log("isVerificationEmail : ".self::$authenticatedUser->getEmailConfirmedAt() !== null);
-        return self::$authenticatedUser->getEmailConfirmedAt() !== null;
+        $user = self::getAuthenticatedUser();
+        return $user->getEmailConfirmedAt() !== null;
     }
 }
