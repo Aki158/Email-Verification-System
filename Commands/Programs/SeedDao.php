@@ -39,12 +39,6 @@ class SeedDao extends AbstractCommand
                 // シードファイルをインクルードします。
                 include_once $directoryPath . '/' . $file;
 
-                // debug_start
-                // $this->log("className : ".$className);
-                // $this->log("class_exists : ".class_exists($className));
-                // $this->log("is_subclass_of : ".is_subclass_of($className, SeederDao::class));
-                // debug_end
-
                 if (class_exists($className) && is_subclass_of($className, SeederDao::class)) {
                     $seederDao = new $className();
                     if($seederDao->seed($num)){

@@ -15,7 +15,7 @@ class Authenticate
     public static function loginAsUser(User $user): bool{
         if($user->getId() === null) throw new \Exception('Cannot login a user with no ID.');
         if(isset($_SESSION[self::USER_ID_SESSION_KEY])) throw new \Exception('User is already logged in. Logout before continuing.');
-
+        
         $_SESSION[self::USER_ID_SESSION_KEY] = $user->getId();
         return true;
     }
@@ -63,5 +63,10 @@ class Authenticate
             return self::$authenticatedUser;
         }
         else throw new AuthenticationFailureException("Invalid password.");
+    }
+
+    public static function isVerificationEmail(): bool{
+        error_log("isVerificationEmail : ".self::$authenticatedUser->getEmailConfirmedAt() !== null);
+        return self::$authenticatedUser->getEmailConfirmedAt() !== null;
     }
 }

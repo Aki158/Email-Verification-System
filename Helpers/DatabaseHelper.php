@@ -34,7 +34,6 @@ class DatabaseHelper
 
         return $part;
     }
-    // debug_start
     public static function getComputerPartByTypes(string $type, int $page, int $perpage): array{
         $db = new MySQLWrapper();
 
@@ -110,5 +109,4 @@ class DatabaseHelper
 
         return $parts;
     }
-    // debug_end
 }

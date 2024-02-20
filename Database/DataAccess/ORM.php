@@ -80,13 +80,6 @@ abstract class ORM
     public static function create(array $data): ORM
     {
         $db = DatabaseManager::getMysqliConnection();
-
-        // debug_start_memo
-        // new static($data) について
-        // これは「遅延静的束縛」の一例であり、PHP 5.3.0以降でサポートされています。
-        // この機能を使用すると、実行時にクラスの実際のサブクラス名を取得し、そのサブクラスのインスタンスを生成することができます。
-        // debug_end_memo
-
         $object = new static($data);
         $columnNames = implode(', ', array_keys($object->attributes));
         $placeholders = implode(', ', array_fill(0, count($object->attributes), '?'));
@@ -170,10 +163,9 @@ abstract class ORM
         return $stmt->execute();
     }
 
-// debug_start
-// ORMの拡張_要件
-// 1. ORM抽象クラスを拡張します。
-//  1.ORM オブジェクトの配列を返す新しいメソッド getAll() を追加します。
+    // ORMの拡張_要件
+    // 1. ORM抽象クラスを拡張します。
+    //  1.ORM オブジェクトの配列を返す新しいメソッド getAll() を追加します。
     public static function getAll(): array
     {
         $db = DatabaseManager::getMysqliConnection();
@@ -192,10 +184,10 @@ abstract class ORM
         return $allRows;
     }
 
-//  2.ORM に一対一の関係を処理する機能を追加します。
-// ORM には、ORM クラス名を取る hasOne($classname) 関数があり、主キーにリンクされたそのクラスの単一インスタンス、または存在しない場合は null を返す必要があります。
-// 例：$character->hasOne(Head::classname) はキャラクターの ID にリンクされたヘッドを返すか、リンクされていない場合は null を返します。
-// これに対応する belongsTo($classname) もあり、現在のインスタンスが所属する指定されたクラスのインスタンスを取得するために使用されます。
+    //  2.ORM に一対一の関係を処理する機能を追加します。
+    // ORM には、ORM クラス名を取る hasOne($classname) 関数があり、主キーにリンクされたそのクラスの単一インスタンス、または存在しない場合は null を返す必要があります。
+    // 例：$character->hasOne(Head::classname) はキャラクターの ID にリンクされたヘッドを返すか、リンクされていない場合は null を返します。
+    // これに対応する belongsTo($classname) もあり、現在のインスタンスが所属する指定されたクラスのインスタンスを取得するために使用されます。
     public function hasOne($classname): ?ORM
     {
         $db = DatabaseManager::getMysqliConnection();
@@ -239,5 +231,4 @@ abstract class ORM
         $data = $result->fetch_assoc();
         return $data !== null ? new static($data) : null;
     }
-// debug_end
 }

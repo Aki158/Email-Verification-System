@@ -29,18 +29,14 @@ class CodeGeneration extends AbstractCommand
             $migrationName = $this->getArgumentValue('name');
             $this->generateMigrationFile($migrationName);
         }
-
-        // debug_start
         if ($codeGenType === 'seeder') {
             $seederName = $this->getArgumentValue('name');
             $this->generateSeederFile($seederName);
         }
-        // debug_end
 
         return 0;
     }
 
-// debug_start
     private function generateSeederFile(string $seederName): void
     {
         $filename = sprintf(
@@ -89,8 +85,6 @@ class {$className} extends AbstractSeeder {
 }
 Seed;
     }
-// debug_end
-
 
     private function generateMigrationFile(string $migrationName): void
     {

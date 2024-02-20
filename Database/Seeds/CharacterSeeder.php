@@ -12,11 +12,9 @@ class CharacterSeeder implements Seeder{
     {
         $rows = $this->createRowData();
 
-        // debug_start
         foreach ($rows as $data){
             Character::create($data);
         }
-        // debug_end
     }
 
     public function createRowData(): array

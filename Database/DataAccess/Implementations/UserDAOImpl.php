@@ -35,6 +35,45 @@ class UserDAOImpl implements UserDAO
         return true;
     }
 
+    public function update(User $user, string $password, ?string $email_confirmed_at): bool
+    {
+        if ($user->getId() === null) throw new \Exception('The specified user has no ID.');
+       
+        $mysqli = DatabaseManager::getMysqliConnection();
+
+        $query = 
+        <<<SQL
+            INSERT INTO users (id, username, email, password, email_confirmed_at, company)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE id = ?,
+            username = VALUES(username), 
+            email = VALUES(email),
+            password = VALUES(password),
+            email_confirmed_at = VALUES(email_confirmed_at),
+            company = VALUES(company);
+        SQL;
+
+        $result = $mysqli->prepareAndExecute(
+            $query,
+            'isssssi',
+            [
+                $user->getId(),
+                $user->getUsername(),
+                $user->getEmail(),
+                $password,
+                $email_confirmed_at,
+                $user->getCompany(),
+                $user->getId()
+            ]
+        );
+       
+        if (!$result) return false;
+
+        $user->setEmailConfirmedAt($email_confirmed_at);
+
+        return true;
+    }
+
     private function getRawById(int $id): ?array{
         $mysqli = DatabaseManager::getMysqliConnection();
 
@@ -87,36 +126,5 @@ class UserDAOImpl implements UserDAO
     public function getHashedPasswordById(int $id): ?string
     {
         return $this->getRawById($id)['password']??null;
-    }
-
-    public function emailVerified(int $id): bool
-    {
-        $user = $this->getById($id);
-
-        if($user === null) return false;
-       
-        $now = date("Y-m-d H:i:s");
-
-        $mysqli = DatabaseManager::getMysqliConnection();
-
-        $query = "INSERT INTO users (username, email, password, email_confirmed_at, company) VALUES (?, ?, ?, ?, ?)";
-
-        $result = $mysqli->prepareAndExecute(
-            $query,
-            'sssss',
-            [
-                $user->getUsername(),
-                $user->getEmail(),
-                $this->getHashedPasswordById($id),
-                $now,
-                $user->getCompany()
-            ]
-        );
-
-        if (!$result) return false;
-
-        $user->setEmailConfirmedAt($now);
-
-        return true;
     }
 }
