@@ -1,4 +1,4 @@
-# Email-Verification-System2
+# Email-Verification-System
 📩コンピュータ部品アプリケーション(メール検証システムによる拡張)
 
 ## 📝説明
