@@ -106,10 +106,10 @@ return [
 
             $queryParameters = [
                 "id" => $user->getId(),
-                "user" => $user->getUsername(),
+                "user" => password_hash($user->getEmail(), PASSWORD_DEFAULT),
                 "expiration" => $expiration
             ];
-            
+
             $url = Route::create("verify/email", function(){})->getSignedURL($queryParameters);
 
             // 署名付き検証 URL を生成し、ユーザーのメールアドレスに送信します。
@@ -260,9 +260,9 @@ return [
     'verify/email'=> Route::create('verify/email', function(): HTTPRenderer{
         try {
             $id = Authenticate::getAuthenticatedUser()->getId();
-            $user = Authenticate::getAuthenticatedUser()->getUsername();
+            $email = Authenticate::getAuthenticatedUser()->getEmail();
             $idCheck = !isset($_GET['id']) || $id !== (int)$_GET['id'];
-            $userCheck = !isset($_GET['user']) || $user !== $_GET['user'];
+            $userCheck = !isset($_GET['user']) || !password_verify($email, $_GET['user']);
 
             // ユーザーの詳細がURLパラメータと一致していることを確認します。
             if($idCheck || $userCheck){
