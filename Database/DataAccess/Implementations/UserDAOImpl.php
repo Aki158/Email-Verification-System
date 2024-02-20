@@ -70,7 +70,6 @@ class UserDAOImpl implements UserDAO
         if (!$result) return false;
 
         $user->setEmailConfirmedAt($emailConfirmedAt);
-        error_log("get_Email_At : ".$user->getEmailConfirmedAt());
 
         return true;
     }
